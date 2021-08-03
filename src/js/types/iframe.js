@@ -6,37 +6,18 @@ class IframeType {
   init (el, container, userSettings) {
     this.userSettings = userSettings
 
-    const IFRAME = document.createElement('iframe')
     const HREF = el.hasAttribute('data-target') ? el.getAttribute('data-target') : el.getAttribute('href')
 
-    IFRAME.setAttribute('frameborder', '0')
-    IFRAME.setAttribute('src', '')
-    IFRAME.setAttribute('allowfullscreen', '')
-    IFRAME.setAttribute('data-src', HREF)
-
-    // Hide until loaded
-    IFRAME.style.opacity = '0'
-
-    // set allow parameters
-    if (HREF.indexOf('youtube.com') > -1) {
-      IFRAME.setAttribute('allow',
-        'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture')
-    } else if (HREF.indexOf('vimeo.com') > -1) {
-      IFRAME.setAttribute('allow', 'autoplay; picture-in-picture')
-    } else if (el.hasAttribute('data-allow')) {
-      IFRAME.setAttribute('allow', el.getAttribute('data-allow'))
+    container.setAttribute('data-HREF', HREF)
+    if (el.getAttribute('data-allow')) {
+      container.setAttribute('data-allow', el.getAttribute('data-allow'))
     }
-
-    if (el.getAttribute('data-width')) {
-      IFRAME.style.maxWidth = `${el.getAttribute('data-width')}px`
+    if (el.hasAttribute('data-width')) {
+      container.setAttribute('data-width', `${el.getAttribute('data-width')}`)
     }
-
-    if (el.getAttribute('data-height')) {
-      IFRAME.style.maxHeight = `${el.getAttribute('data-height')}px`
+    if (el.hasAttribute('data-height')) {
+      container.setAttribute('data-height', `${el.getAttribute('data-height')}`)
     }
-
-    // Add iframe to container
-    container.appendChild(IFRAME)
 
     // Register type
     container.setAttribute('data-type', 'iframe')
@@ -48,11 +29,65 @@ class IframeType {
   }
 
   onLoad (container) {
-    const IFRAME = container.querySelector('iframe')
-    IFRAME.setAttribute('src', IFRAME.getAttribute('data-src'))
+    let IFRAME = container.querySelector('iframe')
 
-    IFRAME.onload = () => {
-      IFRAME.style.opacity = '1'
+    // Create loading indicator
+    const LOADING_INDICATOR = document.createElement('div')
+    LOADING_INDICATOR.className = 'tobii__loader'
+    LOADING_INDICATOR.setAttribute('role', 'progressbar')
+    LOADING_INDICATOR.setAttribute('aria-label', this.userSettings.loadingIndicatorLabel)
+    container.appendChild(LOADING_INDICATOR)
+
+    if (IFRAME == null) {
+      IFRAME = document.createElement('iframe')
+      const HREF = container.getAttribute('data-href')
+
+      IFRAME.setAttribute('frameborder', '0')
+      IFRAME.setAttribute('src', HREF)
+      IFRAME.setAttribute('allowfullscreen', '')
+      IFRAME.setAttribute('data-src', HREF)
+
+      // set allow parameters
+      if (HREF.indexOf('youtube.com') > -1) {
+        IFRAME.setAttribute('allow',
+          'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture')
+      } else if (HREF.indexOf('vimeo.com') > -1) {
+        IFRAME.setAttribute('allow', 'autoplay; picture-in-picture')
+      } else if (container.hasAttribute('data-allow')) {
+        IFRAME.setAttribute('allow', container.getAttribute('data-allow'))
+      }
+
+      if (container.getAttribute('data-width')) {
+        IFRAME.style.maxWidth = `${container.getAttribute('data-width')}`
+      }
+
+      if (container.getAttribute('data-height')) {
+        IFRAME.style.maxHeight = `${container.getAttribute('data-height')}`
+      }
+
+      // Hide until loaded
+      IFRAME.style.opacity = '0'
+
+      // Add iframe to container
+      container.appendChild(IFRAME)
+
+      IFRAME.addEventListener('load', () => {
+        IFRAME.style.opacity = '1'
+        const LOADING_INDICATOR = container.querySelector('.tobii__loader')
+        if (LOADING_INDICATOR) {
+          container.removeChild(LOADING_INDICATOR)
+        }
+      })
+      IFRAME.addEventListener('error', () => {
+        IFRAME.style.opacity = '1'
+        const LOADING_INDICATOR = container.querySelector('.tobii__loader')
+        if (LOADING_INDICATOR) {
+          container.removeChild(LOADING_INDICATOR)
+        }
+      })
+    } else {
+      // was loaded once
+      IFRAME.setAttribute('src', container.getAttribute('data-href'))
     }
   }
 
