@@ -39,13 +39,13 @@ class IframeType {
     container.appendChild(LOADING_INDICATOR)
 
     if (IFRAME == null) {
+      // create iframe
       IFRAME = document.createElement('iframe')
       const HREF = container.getAttribute('data-href')
 
       IFRAME.setAttribute('frameborder', '0')
       IFRAME.setAttribute('src', HREF)
       IFRAME.setAttribute('allowfullscreen', '')
-      IFRAME.setAttribute('data-src', HREF)
 
       // set allow parameters
       if (HREF.indexOf('youtube.com') > -1) {
@@ -86,7 +86,7 @@ class IframeType {
         }
       })
     } else {
-      // was loaded once
+      // was already created
       IFRAME.setAttribute('src', container.getAttribute('data-href'))
     }
   }
