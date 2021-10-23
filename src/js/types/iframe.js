@@ -19,6 +19,8 @@ class IframeType {
       container.setAttribute('data-height', `${el.getAttribute('data-height')}`)
     }
 
+    // dont create empty iframes here - very slow
+
     // Register type
     container.setAttribute('data-type', 'iframe')
     container.classList.add('tobii-iframe')
